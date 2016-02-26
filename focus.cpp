@@ -6,54 +6,62 @@
 using namespace std;
 using namespace cv;
 
-Mat dst, src_gray, detected_edges, src;
-int lowThreshold;
-
-void CannyThreshold(int, void*)
-{
-  /// Reduce noise with a kernel 3x3
-  blur( src_gray, detected_edges, Size(3,3) );
-
-  /// Canny detector
-  Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*3, 3 );
-
-  /// Using Canny's output as a mask, we display our result
-  dst = Scalar::all(0);
-
-  src.copyTo( dst, detected_edges);
-  imshow( "Edge Map", dst );
-  imshow("",src);
- }
-
-
-void canny()
-{
-
-  dst.create( src.size(), src.type() );
-  cvtColor( src, src_gray, CV_BGR2GRAY );
-  namedWindow( "Edge Map", CV_WINDOW_AUTOSIZE );
-  createTrackbar( "Min Threshold:", "Edge Map", &lowThreshold, 100, CannyThreshold );
-  CannyThreshold(0, 0);
-  waitKey(0);
-}
-
 int main()
 {
-	//src = imread("Lenna.png");
+
+  Mat orig_img= imread("test.jpg");
+  Mat gray_img, hsv_img;
+  Mat output_img = Mat(orig_img.rows, orig_img.cols, CV_8UC3);
+  cvtColor(orig_img,gray_img, COLOR_BGR2GRAY);
+  cvtColor(gray_img,gray_img, COLOR_GRAY2BGR);
+  cvtColor(orig_img,hsv_img, COLOR_BGR2HSV);
 
   //TODO: select coordinates
 
-  //canny();
 
-  Mat orig_img= imread("Lenna.png",0);
-  Mat outerBox = Mat(orig_img.size(), CV_8UC1);
-  GaussianBlur(orig_img, orig_img, Size(11,11), 0);
-  adaptiveThreshold(orig_img, outerBox, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 5, 2);
-  bitwise_not(outerBox, outerBox);
+  inRange(hsv_img, Scalar(150, 0, 0), Scalar(180,255,255), hsv_img);
+
   Mat kernel = (Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,0);
-  erode(outerBox, outerBox, kernel);
+  // erode(hsv_img, hsv_img, kernel);
+  // erode(hsv_img, hsv_img, kernel);
+  dilate(hsv_img, hsv_img, kernel);
+  dilate(hsv_img, hsv_img, kernel);
 
-  imshow("",outerBox);
+
+  uchar* p;
+  uchar* q;
+  uchar* r;
+  uchar* s;
+  int i,j;
+
+  for(i=0;i<orig_img.rows; i++)
+	{
+		p=orig_img.ptr<uchar>(i);
+		q=output_img.ptr<uchar>(i);
+    r=gray_img.ptr<uchar>(i);
+    s=hsv_img.ptr<uchar>(i);
+		for(j=0;j<orig_img.cols*orig_img.channels();j+=orig_img.channels())
+		{
+			if(s[j/3]==255)
+			{
+				q[j]=p[j];
+				q[j+1]=p[j+1];
+				q[j+2]=p[j+2];
+			}
+			else
+			{
+        q[j]=r[j];
+        q[j+1]=r[j+1];
+        q[j+2]=r[j+2];
+			}
+		}
+	}
+
+  imshow("Original",orig_img);
+  imshow("Gray",gray_img);
+  imshow("HSV",hsv_img);
+  imshow("Output",output_img);
+
   waitKey(0);
 
 

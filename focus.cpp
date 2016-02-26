@@ -143,9 +143,10 @@ int main()
     dilate(hsv_img, hsv_img, kernel);
     dilate(hsv_img, hsv_img, kernel);
     dilate(hsv_img, hsv_img, kernel);
-    // dilate(hsv_img, hsv_img, kernel);
-    // dilate(hsv_img, hsv_img, kernel);
+    dilate(hsv_img, hsv_img, kernel);
+    dilate(hsv_img, hsv_img, kernel);
 
+    // blur( gray_img, gray_img, Size( 10,10 ), Point(-1,-1) );
 
 
     for(i=0;i<orig_img.rows; i++)
@@ -176,4 +177,5 @@ int main()
   imshow("HSV",hsv_img);
   imshow("Output",output_img);
   waitKey(0);
+  imwrite("result.jpg", output_img);
 }
